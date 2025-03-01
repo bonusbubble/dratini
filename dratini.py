@@ -24,8 +24,11 @@ if args.ast:
 # Generate C++ source code from the Python module.
 cpp_source_code = generate_cpp(python_module)
 
+# If an output file was not specified:
 if args.output == None or len(args.output) < 1:
+    # Write the C++ source code to the standard output stream (STDOUT).
     print(cpp_source_code)
+# Otherwise:
 else:
     # Write the C++ source code to the output file.
     save_text_file(args.output, cpp_source_code)
