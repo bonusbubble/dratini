@@ -11,11 +11,22 @@ extern "C" {
     #include <raylib.h>
 }
 
+const auto begin_drawing = BeginDrawing;
+const auto clear_background = ClearBackground;
+const auto close_window = CloseWindow;
+const auto draw_text = DrawText;
+const auto end_drawing = EndDrawing;
+const auto init_window = InitWindow;
+const auto set_target_fps = SetTargetFPS;
+const auto window_should_close = WindowShouldClose;
+
 namespace dratini
 {
     class Object;
 
-    // class Class;
+    using any = Object;
+
+    // class ClassType;
 
     // class Bool;
     // class Float;
@@ -26,11 +37,20 @@ namespace dratini
     using __RawValue = uint64_t;
 
     using __RawDict = std::unordered_map<__RawValue, Object *>;
-    // using __RawList = std::vector<Object>;
-    // using __RawString = std::string;
+    using __RawList = std::vector<Object>;
+    using __RawString = std::string;
 
     // class Dict;
     // class List;
+
+    class ClassType
+    {
+    public:
+        ClassType();
+        ~ClassType();
+    private:
+        __RawString __name;
+    };
 
     class Object
     {
@@ -55,15 +75,6 @@ namespace dratini
         void __delete_raw_dict();
         void __initialize_attributes();
     };
-
-    // class Class : Object
-    // {
-    // public:
-    //     Class();
-    //     ~Class();
-    // private:
-    //     __RawString __name;
-    // };
 
     // class NoneType : Object
     // {

@@ -89,6 +89,20 @@ class DratiniCompiler:
         self._throw_feature_not_supported("expressions", module)
         return ""
 
+    def generate_function_body(self, module: _ast.Module, body: list[_ast.stmt]):
+        source_code = ""
+        statement_delimiter = self.statement_delimiter
+        if self.one_statement_per_line:
+            statement_delimiter += self.line_delimiter
+        statement_prefix = self.statement_prefix
+        statement_suffix = self.statement_suffix
+        for statement in body:
+            statement_source_code = statement_prefix + self.generate_statement(module, statement) + statement_suffix + statement_delimiter
+            if isinstance(statement_source_code, str) and len(statement_source_code) > 0:
+                source_code += statement_source_code
+        source_code = self.decorate_function_body(module, source_code)
+        return source_code
+
     def generate_module(self, module: _ast.Module) -> str:
         line_delimiter = self.line_delimiter
         source_code = self.load_header_file() + line_delimiter
@@ -97,21 +111,8 @@ class DratiniCompiler:
         return source_code
 
     def generate_module_body(self, module: _ast.Module) -> str:
-        source_code = self.generate_module_body_inner(module)
-        source_code = self.wrap_module_body(module, source_code)
-        return source_code
-
-    def generate_module_body_inner(self, module: _ast.Module) -> str:
-        source_code = ""
-        statement_delimiter = self.statement_delimiter
-        if self.one_statement_per_line:
-            statement_delimiter += self.line_delimiter
-        statement_prefix = self.statement_prefix
-        statement_suffix = self.statement_suffix
-        for statement in module.body:
-            statement_source_code = statement_prefix + self.generate_statement(module, statement) + statement_suffix + statement_delimiter
-            if isinstance(statement_source_code, str) and len(statement_source_code) > 0:
-                source_code += statement_source_code
+        source_code = self.generate_function_body(module, module.body)
+        source_code = self.decorate_module_body(module, source_code)
         return source_code
 
     def generate_name(self, module: _ast.Module, name: _ast.Name) -> str:
@@ -134,7 +135,10 @@ class DratiniCompiler:
     def load_header_file(self) -> str:
         return self.load_component("header")
 
-    def wrap_module_body(self, module: _ast.Module, source_code: str) -> str:
+    def decorate_function_body(self, module: _ast.Module, source_code: str) -> str:
+        return source_code
+
+    def decorate_module_body(self, module: _ast.Module, source_code: str) -> str:
         return source_code
 
     def _throw_feature_not_supported(self, category: str, feature: object):

@@ -97,6 +97,8 @@ class CppCodeGenerator(DratiniCompiler):
             return self.generate_constant(module, expression)
         if isinstance(expression, _ast.Name):
             return self.generate_name(module, expression)
+        if isinstance(expression, _ast.UnaryOp):
+            return self.generate_unary_op(module, expression)
         self._throw_feature_not_supported("expression", expression)
 
     def generate_expressions(self, module: _ast.Module, expressions: list[_ast.Expr]) -> str:
@@ -107,14 +109,19 @@ class CppCodeGenerator(DratiniCompiler):
         source_code = ", ".join(expression_source_codes)
         return source_code
 
-    def wrap_module_body(self, module: _ast.Module, source_code: str) -> str:
+    def decorate_function_body(self, module: _ast.Module, source_code: str) -> str:
+        header = "{" + self.line_delimiter
+        footer = "}"
+        return header + source_code + footer
+
+    def decorate_module_body(self, module: _ast.Module, source_code: str) -> str:
         header = "int main() {" + self.line_delimiter
-        header += self.wrap_statement("bgcx_start();")
-        footer = self.wrap_statement("bgcx_stop();")
+        header += self.decorate_statement("bgcx_start();")
+        footer = self.decorate_statement("bgcx_stop();")
         footer += "}"
         return header + source_code + footer
 
-    def wrap_statement(self, source_code: str) -> str:
+    def decorate_statement(self, source_code: str) -> str:
         source_code = self.statement_prefix + source_code + self.statement_suffix
         if self.one_statement_per_line:
             source_code += self.line_delimiter
@@ -134,10 +141,27 @@ class CppCodeGenerator(DratiniCompiler):
         if isinstance(statement, _ast.Expr):
             expression = statement.value
             source_code += self.generate_expression(module, expression)
+        if isinstance(statement, _ast.While):
+            test_source_code = self.generate_expression(module, statement.test)
+            body_source_code = self.generate_function_body(module, statement.body)
+            source_code += "while (" + test_source_code + ") " + body_source_code
         if source_code is None or len(source_code) < 1:
             self._throw_feature_not_supported("statement", statement)
         return source_code
 
+    def generate_unary_op(self, module: _ast.Module, unary_op: _ast.UnaryOp) -> str:
+        operand_expression = self.generate_expression(module, unary_op.operand)
+        operator_node = unary_op.op
+        operator = None
+        if isinstance(operator_node, _ast.Not):
+            operator = "!"
+        if operator is None:
+            self._throw_feature_not_supported("unary_op/operator", operator_node)
+        if operator == "!":
+            source_code = "(!(" + operand_expression + "))"
+        else:
+            source_code = operand_expression + " " + operator + " " + right_expression
+        return source_code
 
 def generate_cpp(module: _ast.Module) -> str:
     '''
