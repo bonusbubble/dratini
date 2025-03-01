@@ -22,5 +22,8 @@ if args.ast:
 # Generate C++ source code from the Python module.
 cpp_source_code = generate_cpp(python_module)
 
-# Write the C++ source code to the output file.
-save_text_file(args.output, cpp_source_code)
+if args.output == None or len(args.output) < 1:
+    print(cpp_source_code)
+else:
+    # Write the C++ source code to the output file.
+    save_text_file(args.output, cpp_source_code)

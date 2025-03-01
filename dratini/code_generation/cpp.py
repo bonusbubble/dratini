@@ -12,7 +12,9 @@ class CppCodeGenerator(DratiniCompiler):
     def __init__(self):
         super().__init__(
                 target_format="cpp",
-                statement_delimiter=";\n"
+                statement_delimiter=";",
+                statement_prefix="    ",
+                one_statement_per_line=True
         )
 
     def generate_ann_assign(self, module: _ast.Module, ann_assign: _ast.AnnAssign) -> str:
@@ -67,6 +69,13 @@ class CppCodeGenerator(DratiniCompiler):
         source_code = function_name + "(" + function_call_args + ")"
         return source_code
 
+    def generate_class_decl(self, module: _ast.Module, class_def: _ast.ClassDef) -> str:
+        return ""
+
+    def generate_class_def(self, module: _ast.Module, class_def: _ast.ClassDef) -> str:
+        self._throw_feature_not_supported("class_def", module)
+        return ""
+
     def generate_constant(self, module: _ast.Module, constant: _ast.Constant) -> str:
         constant_value = constant.value
         if isinstance(constant_value, bool):
@@ -98,21 +107,34 @@ class CppCodeGenerator(DratiniCompiler):
         source_code = ", ".join(expression_source_codes)
         return source_code
 
+    def wrap_module_body(self, module: _ast.Module, source_code: str) -> str:
+        header = "int main() {" + self.line_delimiter
+        header += self.wrap_statement("bgcx_start();")
+        footer = self.wrap_statement("bgcx_stop();")
+        footer += "}"
+        return header + source_code + footer
+
+    def wrap_statement(self, source_code: str) -> str:
+        source_code = self.statement_prefix + source_code + self.statement_suffix
+        if self.one_statement_per_line:
+            source_code += self.line_delimiter
+        return source_code
+
     def generate_name(self, module: _ast.Module, name: _ast.Name) -> str:
         if isinstance(name, _ast.Name):
             return name.id
         self._throw_feature_not_supported("name", name)
 
     def generate_statement(self, module: _ast.Module, statement: _ast.stmt) -> str:
-        source_code = None
+        source_code = ""
         if isinstance(statement, _ast.AnnAssign):
-            source_code = self.generate_ann_assign(module, statement)
+            source_code += self.generate_ann_assign(module, statement)
         if isinstance(statement, _ast.Assign):
-            source_code = self.generate_assign(module, statement)
+            source_code += self.generate_assign(module, statement)
         if isinstance(statement, _ast.Expr):
             expression = statement.value
-            source_code = self.generate_expression(module, expression)
-        if source_code is None:
+            source_code += self.generate_expression(module, expression)
+        if source_code is None or len(source_code) < 1:
             self._throw_feature_not_supported("statement", statement)
         return source_code
 

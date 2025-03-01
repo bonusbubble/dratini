@@ -1,32 +1,55 @@
-#if !defined(dratini_FOOTER_CPP)
-#define dratini_FOOTER_CPP
+#if !defined(DRATINI_FOOTER)
+#define DRATINI_FOOTER
 
+extern "C" {
+    #include <bgc.h>
+}
+
+#if !defined(DRATINI_HEADER)
 #include "header.cpp"
+#endif
+
+#include <iostream>
 
 namespace dratini
 {
     Object::Object()
     {
-        // Create an attribute map for the object.
-        // this->__attributes = new __RawDict();
+        std::cout << "ctor" << std::endl;
+        this->__initialize_attributes();
     }
 
     Object::~Object()
     {
+        std::cout << "dtor" << std::endl;
         this->__delete_raw_dict();
     }
 
-    NoneType Object::__delete_raw_dict()
+    void Object::__delete_raw_dict()
     {
-        // // If this object has an attribute map:
-        // if (this->__attributes != nullptr)
-        // {
-        //     // Delete the object's attribute map.
-        //     delete this->__attributes;
-        // }
+        // If this object has an attribute map:
+        if (this->__attributes != nullptr)
+        {
+            // Delete the object's attribute map.
+            delete this->__attributes;
+        }
+    }
 
-        // return None;
+    __RawDict * Object::__create_raw_dict()
+    {
+        // Allocate a new managed `__RawDict`.
+        // return dratini__new(__RawDict)();
+        __RawDict *dict = new (malloc(sizeof(__RawDict))) __RawDict();
+        // return new __RawDict();
+
+        return dict;
+    }
+
+    void Object::__initialize_attributes()
+    {
+        // Create an attribute map for the object.
+        this->__attributes = this->__create_raw_dict();
     }
 }
 
-#endif // dratini_FOOTER_CPP
+#endif // DRATINI_FOOTER

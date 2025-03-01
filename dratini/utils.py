@@ -193,7 +193,7 @@ def parse_program_arguments() -> object:
         "-o",
         "--output",
         type = str,
-        default = "{DEFAULT_OUTPUT}"
+        default = ""
     )
     # argument_parser.add_argument("--usage")
     argument_parser.add_argument("-V", "--verbose")
@@ -206,10 +206,6 @@ def parse_program_arguments() -> object:
         output_file_extension = program_arguments.output.split(".")[-1]
         # Use the output file extension as the default output format.
         program_arguments.format = output_file_extension
-    program_arguments.output.replace(
-        "{DEFAULT_OUTPUT}",
-        _get_default_output(program_arguments.format)
-    )
     # Return the program's arguments.
     return program_arguments
 
