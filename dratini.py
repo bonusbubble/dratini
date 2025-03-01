@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from ast import parse as _parse_python
 from dratini.code_generation.cpp import generate_cpp
 from dratini.utils import load_text_files_as_one, parse_program_arguments, print_dump, save_text_file, throw_feature_not_supported
