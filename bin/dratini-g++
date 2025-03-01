@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-g++ $@ -xc++ - -lbgc -lraylib
+libs="-lbgc -l:libraylib.a"
+
+g++ $@ -xc++ - $libs
