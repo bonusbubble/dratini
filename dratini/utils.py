@@ -76,20 +76,12 @@ def print_dump(object_: object) -> str:
 
 
 def resolve_variable_name(function_id: int, variable_name: str) -> str:
-    # If the variable name is a class property name:
-    if variable_name.startswith("__"):
-        # Return the resolved class attribute name.
-        return resolve_class_attribute_name(variable_name)
     # If the variable name is an unmangled variable name:
-    if variable_name.startswith("@"):
+    if "__" in variable_name:
         # Return the resolved unmangled variable name.
         return resolve_unmangled_variable_name(variable_name)
     # Return the resolved local variable name.
     return resolve_local_variable_name(function_id, variable_name)
-
-
-def resolve_class_attribute_name(variable_name: str) -> str:
-    return variable_name
 
 
 def hex2(value: int) -> str:
@@ -112,7 +104,7 @@ def resolve_local_variable_name(function_id: int, variable_name: str) -> str:
 
 
 def resolve_unmangled_variable_name(variable_name: str) -> str:
-    return variable_name[1:]
+    return variable_name
 
 
 def load_text_file(
