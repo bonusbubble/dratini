@@ -22,17 +22,28 @@ const auto window_should_close = WindowShouldClose;
 
 namespace dratini
 {
-    class Object;
+    class any;
 
-    using any = Object;
+    class Object;
 
     // class ClassType;
 
     // class Bool;
-    // class Float;
-    // class Int;
+    class Float;
+    class Int;
     // class NoneType;
     // class Str;
+
+    using f64 = double;
+    using f32 = float;
+    using i8 = int8_t;
+    using i16 = int16_t;
+    using i32 = int32_t;
+    using i64 = int64_t;
+    using u8 = uint8_t;
+    using u16 = uint16_t;
+    using u32 = uint32_t;
+    using u64 = uint64_t;
 
     using __RawValue = uint64_t;
 
@@ -43,6 +54,16 @@ namespace dratini
     // class Dict;
     // class List;
 
+    class ValueTypes
+    {
+    public:
+        static __RawString none_();
+        static __RawString object_();
+        static __RawString bool_();
+        static __RawString float_();
+        static __RawString int_();
+    };
+
     class ClassType
     {
     public:
@@ -50,6 +71,24 @@ namespace dratini
         ~ClassType();
     private:
         __RawString __name;
+    };
+
+    class any
+    {
+    public:
+        any();
+        any(Object *object);
+        any(Float *value);
+        any(Int *value);
+        operator bool();
+        operator double();
+        operator int();
+        operator __RawString();
+        operator Object *();
+        __RawString __primitivetypename__();
+    private:
+        u64 __value;
+        __RawString __type;
     };
 
     class Object
@@ -76,14 +115,14 @@ namespace dratini
         void __initialize_attributes();
     };
 
-    // class NoneType : Object
+    // class NoneType : public Object
     // {
     //     Str __str__();
     // };
 
     // const NoneType None;
 
-    // class Dict : Object
+    // class Dict : public Object
     // {
     // public:
     //     Dict();
@@ -92,7 +131,7 @@ namespace dratini
     //     ~Dict();
     // };
 
-    // class Bool : Object
+    // class Bool : public Object
     // {
     // public:
     //     Bool();
@@ -102,27 +141,34 @@ namespace dratini
     //     bool __value;
     // };
 
-    // class Float : Object
-    // {
-    // public:
-    //     Float();
-    //     Float(float value);
-    //     ~Float();
-    // private:
-    //     float __value;
-    // };
+    class Float : public Object
+    {
+    public:
+        Float();
+        Float(f64 value);
+        ~Float();
+        operator f64();
+        operator f64 *();
+        f64 __unbox__();
+    private:
+        f64 __value;
+    };
 
-    // class Int : Object
-    // {
-    // public:
-    //     Int();
-    //     Int(int value);
-    //     ~Int();
-    // private:
-    //     int __value;
-    // };
+    class Int : public Object
+    {
+    public:
+        Int();
+        Int(i32 value);
+        ~Int();
+        operator i32();
+        operator i32 *();
+        i32 __unbox__();
+        Int bit_length();
+    private:
+        i32 __value;
+    };
 
-    // class Str : Object
+    // class Str : public Object
     // {
     // public:
     //     Str();
@@ -136,14 +182,13 @@ namespace dratini
 
 #define dratini__new(T)     new (bgc_malloc_ext(BGC_GLOBAL_GC, sizeof(T), ([](void *this_){ std::destroy_at<T>((T *)(this_)); }))) T
 
-#include <any>
-#include <iostream>
+using namespace dratini;
 
 void foo()
 {
-    std::any object = dratini__new(dratini::Object)();
+    any object = dratini__new(Object)();
 
-    object = dratini__new(double)(3.14);
+    object = dratini__new(Float)(3.14);
 }
 
 #endif // DRATINI_HEADER

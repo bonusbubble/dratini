@@ -171,15 +171,18 @@ def parse_program_arguments() -> object:
     )
     argument_parser.add_argument(
         "--debug",
-        type = bool,
-        default = False
+        action="store_true"
+    )
+    argument_parser.add_argument(
+        "--emit-cpp",
+        action="store_true"
     )
     # argument_parser.add_argument("-h", "--help")
     argument_parser.add_argument(
         "-f",
         "--format",
         type = str,
-        default = ""
+        default = "elf"
     )
     argument_parser.add_argument(
         "-o",
