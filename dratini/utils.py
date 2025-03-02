@@ -1,9 +1,12 @@
 import argparse as _argparse
 from ast import dump as _dump_python_ast
 
+from dratini.projectconfig import *
+
+
 
 def _get_default_output(
-    format: str
+        format: str
 ) -> str:
     # Windows Executable
     if format == "exe":
@@ -16,8 +19,8 @@ def _get_default_output(
 
 
 def abort(
-    code: int = 0xFFFFFFFF,
-    message: str = ""
+        code: int = 0xFFFFFFFF,
+        message: str = ""
 ):
     '''
     Abort the program by printing `message` and then returning `code`.
@@ -36,7 +39,9 @@ def abort(
     exit(code)
 
 
-def list_bool(values: list[object]) -> list[bool]:
+def list_bool(
+        values: list[object]
+) -> list[bool]:
     converted_values = []
     for value in values:
         converted_value = bool(value)
@@ -44,7 +49,9 @@ def list_bool(values: list[object]) -> list[bool]:
     return converted_values
 
 
-def list_int(values: list[object]) -> list[int]:
+def list_int(
+        values: list[object]
+) -> list[int]:
     converted_values = []
     for value in values:
         converted_value = int(value)
@@ -52,7 +59,9 @@ def list_int(values: list[object]) -> list[int]:
     return converted_values
 
 
-def list_float(values: list[object]) -> list[float]:
+def list_float(
+        values: list[object]
+) -> list[float]:
     converted_values = []
     for value in values:
         converted_value = float(value)
@@ -60,7 +69,9 @@ def list_float(values: list[object]) -> list[float]:
     return converted_values
 
 
-def list_str(values: list[object]) -> list[str]:
+def list_str(
+        values: list[object]
+) -> list[str]:
     converted_values = []
     for value in values:
         converted_value = str(value)
@@ -68,14 +79,19 @@ def list_str(values: list[object]) -> list[str]:
     return converted_values
 
 
-def print_dump(object_: object) -> str:
+def print_dump(
+        object_: object
+) -> str:
     # Get a prettified dump of the AST.
     python_ast_dump = _dump_python_ast(object_, indent=4)
     # Print the dump.
     print(python_ast_dump)
 
 
-def resolve_variable_name(function_id: int, variable_name: str) -> str:
+def resolve_variable_name(
+        function_id: int,
+        variable_name: str
+) -> str:
     # If the variable name is an unmangled variable name:
     if "__" in variable_name:
         # Return the resolved unmangled variable name.
@@ -84,31 +100,38 @@ def resolve_variable_name(function_id: int, variable_name: str) -> str:
     return resolve_local_variable_name(function_id, variable_name)
 
 
-def hex2(value: int) -> str:
+def hex2(
+        value: int
+) -> str:
     return hex(value)[3:]
 
 
-def _resolve_hex(value: object) -> str:
-    hash_code = value
-    if isinstance(hash_code, int):
-        hash_code = 11 * hash_code * 13 * hash_code * 27
-    hash_code = hash(hash_code)
-    return hex2(hash_code)[:6]
+def is_linux() -> bool:
+    return PLATFORM.name == "Linux"
 
 
-def resolve_local_variable_name(function_id: int, variable_name: str) -> str:
+def is_windows() -> bool:
+    return PLATFORM.name == "Windows"
+
+
+def resolve_local_variable_name(
+        function_id: int,
+        variable_name: str
+) -> str:
     function_id_hex = _resolve_hex(function_id)
     variable_name_hex = _resolve_hex(variable_name)
     resolved_variable_name = "_" + function_id_hex + "_" + variable_name_hex
     return resolved_variable_name
 
 
-def resolve_unmangled_variable_name(variable_name: str) -> str:
+def resolve_unmangled_variable_name(
+        variable_name: str
+) -> str:
     return variable_name
 
 
 def load_text_file(
-    file_path: str
+        file_path: str
 ) -> str:
     '''
     Load the contents of a text file.
@@ -120,7 +143,7 @@ def load_text_file(
 
 
 def load_text_files(
-    input_paths: list[str]
+        input_paths: list[str]
 ) -> list[str]:
     '''
     Load the contents of multiple text files.
@@ -138,7 +161,7 @@ def load_text_files(
 
 
 def load_text_files_as_one(
-    input_paths: list[str]
+        input_paths: list[str]
 ) -> str:
     '''
     Load the contents of multiple text files as one string.
@@ -153,46 +176,55 @@ def parse_program_arguments() -> object:
     '''
     # Create a new program argument parser.
     argument_parser = _argparse.ArgumentParser(
-        prog = "dratini",
-        description = "dratini Python-to-C++ Transpiler",
-        epilog = "Made with lots of love <3",
-        usage = "dratini <input_files> [options] -o <output_file>"
+            prog = "dratini",
+            description = "dratini " + PROJECT.version_tag + " - Dratini AOT Compiler",
+            epilog = PROJECT.copyright,
+            usage = "dratini <input+> [options] -o <output>"
     )
     # Add arguments to the parser.
     argument_parser.add_argument(
-        "input",
-        action = "extend",
-        nargs = "+",
-        type = str
+            "input",
+            action="extend",
+            nargs="+",
+            type=str,
+            help="one or more input files to read"
     )
     argument_parser.add_argument(
-        "--ast",
-        action="store_true"
+            "--debug",
+            action="store_true",
+            help="enable debugging mode"
     )
     argument_parser.add_argument(
-        "--debug",
-        action="store_true"
+            "--emit-ast",
+            action="store_true",
+            help="emit an AST (Abstract Syntax Tree)"
     )
     argument_parser.add_argument(
-        "--emit-cpp",
-        action="store_true"
-    )
-    # argument_parser.add_argument("-h", "--help")
-    argument_parser.add_argument(
-        "-f",
-        "--format",
-        type = str,
-        default = "elf"
+            "--emit-cpp",
+            action="store_true",
+            help="emit C++ source code"
     )
     argument_parser.add_argument(
-        "-o",
-        "--output",
-        type = str,
-        default = ""
+            "-o",
+            "--output",
+            type = str,
+            default = "",
+            help="write the output to file",
+            choices=["path"]
     )
-    # argument_parser.add_argument("--usage")
-    argument_parser.add_argument("-V", "--verbose")
-    # argument_parser.add_argument("-v", "--version")
+    version_message = "%(prog)s " + PROJECT.version_tag + " - " + PROJECT.copyright
+    argument_parser.add_argument(
+            "-v",
+            "--version",
+            action="version",
+            version=version_message
+    )
+    argument_parser.add_argument(
+            "-V",
+            "--verbose",
+            action="store_true",
+            help="enable verbose mode"
+    )
     # Parse the program arguments.
     program_arguments = argument_parser.parse_args()
     # Auto-detect the output format using the output file extension.
@@ -206,8 +238,8 @@ def parse_program_arguments() -> object:
 
 
 def save_text_file(
-    path: str,
-    data: str
+        path: str,
+        data: str
 ):
     '''
     Save the contents of a text file.
@@ -232,6 +264,16 @@ def throw_feature_not_supported(
         error_message += category + "/"
     error_message += feature.__class__.__name__
     abort(
-        code = 0x111E_ED42,
-        message = error_message
+            code = 0x111E_ED42,
+            message = error_message
     )
+
+
+def _resolve_hex(
+        value: object
+) -> str:
+    hash_code = value
+    if isinstance(hash_code, int):
+        hash_code = 11 * hash_code * 13 * hash_code * 27
+    hash_code = hash(hash_code)
+    return hex2(hash_code)[:6]

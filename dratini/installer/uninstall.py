@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
 import os
-import platform
+import shutil
 
-from ..utils import throw_feature_not_supported
+from dratini.utils import is_linux, is_windows, throw_feature_not_supported
 
-
-#-----------#
-# Variables #
-#-----------#
-
-PLATFORM_NAME = platform.system()
+from .config import *
 
 
 #-----------#
@@ -21,77 +16,80 @@ def _throw_platform_not_supported():
     throw_feature_not_supported(PLATFORM_NAME, namespace="uninstall", category="platform")
 
 
-def is_linux() -> bool:
-    return PLATFORM_NAME == "Linux"
+def _uninstall_common():
+    pass
 
 
-def is_windows() -> bool:
-    return PLATFORM_NAME == "Windows"
+def _uninstall_linux():
+    _uninstall_linux__copy_lib()
+    _uninstall_linux__link_main_executable()
 
 
-def uninstall_common():
-    print("uninstall_common")
+def _uninstall_linux__copy_lib():
+    copy_dest_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name)
+    shutil.rmtree(copy_dest_path)
 
 
-def uninstall_linux():
-    print("uninstall_linux")
+def _uninstall_linux__link_main_executable():
+    ln_dest_path = os.path.join(INSTALL_BIN_DIR, PROJECT.name)
+    os.remove(ln_dest_path)
 
 
-def uninstall_windows():
-    print("uninstall_windows")
+def _uninstall_windows():
+    pass
 
 
-def postuninstall_common():
-    print("postuninstall_common")
+def _postuninstall_common():
+    pass
 
 
-def postuninstall_linux():
-    print("postuninstall_linux")
+def _postuninstall_linux():
+    pass
 
 
-def postuninstall_windows():
-    print("postuninstall_windows")
+def _postuninstall_windows():
+    pass
 
 
-def preuninstall_common():
-    print("preuninstall_common")
+def _preuninstall_common():
+    pass
 
 
-def preuninstall_linux():
-    print("preuninstall_linux")
+def _preuninstall_linux():
+    pass
 
 
-def preuninstall_windows():
-    print("preuninstall_windows")
+def _preuninstall_windows():
+    pass
 
 
-def postuninstall():
-    postuninstall_common()
+def _postuninstall():
+    _postuninstall_common()
     if is_linux():
-        postuninstall_linux()
+        _postuninstall_linux()
     elif is_windows():
-        postuninstall_windows()
+        _postuninstall_windows()
     else:
         _throw_platform_not_supported()
 
 
-def preuninstall():
-    preuninstall_common()
+def _preuninstall():
+    _preuninstall_common()
     if is_linux():
-        preuninstall_linux()
+        _preuninstall_linux()
     elif is_windows():
-        preuninstall_windows()
+        _preuninstall_windows()
     else:
         _throw_platform_not_supported()
 
 
 def uninstall():
-    preuninstall()
-    uninstall_common()
+    _preuninstall()
+    _uninstall_common()
     if is_linux():
-        uninstall_linux()
+        _uninstall_linux()
     elif is_windows():
-        uninstall_windows()
+        _uninstall_windows()
     else:
         _throw_platform_not_supported()
-    postuninstall()
+    _postuninstall()

@@ -1,5 +1,6 @@
 import argparse
 import dratini.installer as installer
+from dratini.projectconfig import *
 
 
 # Create the argument parser.
@@ -7,7 +8,7 @@ argument_parser = argparse.ArgumentParser(
         prog="dratini-installer",
         usage="dratini-installer --help",
         description="The CLI installer/uninstaller for Dratini.",
-        epilog="Copyright (c) 2025 - bonusbyte.org"
+        epilog=PROJECT.copyright
 )
 # Add flags `--install`.
 argument_parser.add_argument(

@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
 import os
-import platform
+import shutil
+import subprocess
 
-from ..utils import throw_feature_not_supported
+from dratini.utils import is_linux, is_windows, throw_feature_not_supported
 
-
-#-----------#
-# Variables #
-#-----------#
-
-PLATFORM_NAME = platform.system()
+from .config import *
+from .uninstall import uninstall
 
 
 #-----------#
@@ -21,77 +18,87 @@ def _throw_platform_not_supported():
     throw_feature_not_supported(PLATFORM_NAME, namespace="install", category="platform")
 
 
-def is_linux() -> bool:
-    return PLATFORM_NAME == "Linux"
+def _install_common():
+    pass
 
 
-def is_windows() -> bool:
-    return PLATFORM_NAME == "Windows"
+def _install_linux():
+    _install_linux__chmod_bin()
+    _install_linux__copy_lib()
+    _install_linux__link_main_executable()
 
 
-def install_common():
-    print("install_common")
+def _install_linux__chmod_bin():
+    subprocess.run([ "chmod", "+x", BIN_PATH ])
 
 
-def install_linux():
-    print("install_linux")
+def _install_linux__copy_lib():
+    copy_dest_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name)
+    shutil.copytree(".", copy_dest_path)
 
 
-def install_windows():
-    print("install_windows")
+def _install_linux__link_main_executable():
+    ln_src_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name, BIN_PATH)
+    ln_dest_path = os.path.join(INSTALL_BIN_DIR, PROJECT.name)
+    subprocess.run([ "ln", "-s", ln_src_path, ln_dest_path ])
 
 
-def postinstall_common():
-    print("postinstall_common")
+def _install_windows():
+    pass
 
 
-def postinstall_linux():
-    print("postinstall_linux")
+def _postinstall_common():
+    pass
 
 
-def postinstall_windows():
-    print("postinstall_windows")
+def _postinstall_linux():
+    pass
 
 
-def preinstall_common():
-    print("preinstall_common")
+def _postinstall_windows():
+    pass
 
 
-def preinstall_linux():
-    print("preinstall_linux")
+def _preinstall_common():
+    pass
 
 
-def preinstall_windows():
-    print("preinstall_windows")
+def _preinstall_linux():
+    pass
 
 
-def postinstall():
-    postinstall_common()
+def _preinstall_windows():
+    pass
+
+
+def _postinstall():
+    _postinstall_common()
     if is_linux():
-        postinstall_linux()
+        _postinstall_linux()
     elif is_windows():
-        postinstall_windows()
+        _postinstall_windows()
     else:
         _throw_platform_not_supported()
 
 
-def preinstall():
-    preinstall_common()
+def _preinstall():
+    _preinstall_common()
     if is_linux():
-        preinstall_linux()
+        _preinstall_linux()
     elif is_windows():
-        preinstall_windows()
+        _preinstall_windows()
     else:
         _throw_platform_not_supported()
 
 
 def install():
-    preinstall()
-    install_common()
+    uninstall()
+    _preinstall()
+    _install_common()
     if is_linux():
-        install_linux()
+        _install_linux()
     elif is_windows():
-        install_windows()
+        _install_windows()
     else:
         _throw_platform_not_supported()
-    postinstall()
+    _postinstall()
