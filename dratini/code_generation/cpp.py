@@ -17,11 +17,58 @@ class CppCodeGenerator(DratiniCompiler):
                 one_statement_per_line=True
         )
 
+    def decorate_function_body(self, module: _ast.Module, source_code: str) -> str:
+        header = "{" + self.line_delimiter
+        footer = "}"
+        return header + source_code + footer
+
+    def decorate_module_body(self, module: _ast.Module, source_code: str) -> str:
+        header = "int main() {" + self.line_delimiter
+        header += self.decorate_statement("bgcx_start();")
+        footer = self.decorate_statement("bgcx_stop();")
+        footer += "}"
+        return header + source_code + footer
+
+    def decorate_statement(self, source_code: str) -> str:
+        source_code = self.statement_prefix + source_code + self.statement_suffix
+        if self.one_statement_per_line:
+            source_code += self.line_delimiter
+        return source_code
+
     def generate_ann_assign(self, module: _ast.Module, ann_assign: _ast.AnnAssign) -> str:
         target = self.generate_name(module, ann_assign.target)
         value = self.generate_expression(module, ann_assign.value)
         annotation = self.generate_name(module, ann_assign.annotation)
         source_code = annotation + " " + target + " = " + value
+        return source_code
+
+    def generate_arg(self, module: _ast.Module, arg: _ast.arg) -> str:
+        arg_source_code = ""
+        name = arg.arg
+        type_name = self.generate_name(module, arg.annotation)
+        if type_name and name:
+            return type_name + " " + name;
+        if name:
+            return "any " + name;
+        if type_name:
+            return type_name + " " + self.random_name()
+        return source_code
+
+    def generate_args(self, module: _ast.Module, args: list[_ast.arg]) -> str:
+        args_source_code = []
+        for arg in args:
+            arg_source_code = self.generate_arg(module, arg)
+            args_source_code.append(arg_source_code)
+        source_code = self.arg_delimiter.join(args_source_code)
+        return source_code
+
+    def generate_arguments(self, module: _ast.Module, args: _ast.arguments) -> str:
+        # posonlyargs = args.posonlyargs
+        # kwonlyargs = args.kwonlyargs
+        # kw_defaults = args.kw_defaults
+        # defaults = args.defaults
+        args = self.generate_args(module, args.args)
+        source_code = self.arg_delimiter.join([args])
         return source_code
 
     def generate_assign(self, module: _ast.Module, assign: _ast.Assign) -> str:
@@ -56,7 +103,7 @@ class CppCodeGenerator(DratiniCompiler):
         if operator is None:
             self._throw_feature_not_supported("bin_op/operator", operator_node)
         if operator == "**":
-            source_code = "pow(" + left_expression + ", " + right_expression + ")"
+            source_code = "pow(" + left_expression + self.arg_delimiter + right_expression + ")"
         elif operator == "//":
             source_code = "floor(" + left_expression + " / " + right_expression + ")"
         else:
@@ -106,31 +153,32 @@ class CppCodeGenerator(DratiniCompiler):
         for expression in expressions:
             expression_source_code = self.generate_expression(module, expression)
             expression_source_codes.append(expression_source_code)
-        source_code = ", ".join(expression_source_codes)
+        source_code = self.arg_delimiter.join(expression_source_codes)
         return source_code
 
-    def decorate_function_body(self, module: _ast.Module, source_code: str) -> str:
-        header = "{" + self.line_delimiter
-        footer = "}"
-        return header + source_code + footer
+    def generate_function_def(self, module: _ast.Module, function_def: _ast.FunctionDef) -> str:
+        body = function_def.body
+        # print_dump(function_def)
+        # exit()
+        decl_source_code = self._generate_function_decl(module, function_def)
+        body_source_code = self.generate_function_body(module, body)
+        source_code = decl_source_code + body_source_code
+        self.function_defs.append(source_code)
+        return self.generate_noop()
 
-    def decorate_module_body(self, module: _ast.Module, source_code: str) -> str:
-        header = "int main() {" + self.line_delimiter
-        header += self.decorate_statement("bgcx_start();")
-        footer = self.decorate_statement("bgcx_stop();")
-        footer += "}"
-        return header + source_code + footer
+    def generate_noop(self) -> str:
+        return "((void) 0)"
 
-    def decorate_statement(self, source_code: str) -> str:
-        source_code = self.statement_prefix + source_code + self.statement_suffix
-        if self.one_statement_per_line:
-            source_code += self.line_delimiter
+    def _generate_function_decl(self, module: _ast.Module, function_def: _ast.FunctionDef) -> str:
+        name = self.generate_name(module, function_def.name)
+        args = function_def.args
+        decorators = function_def.decorator_list
+        return_type = (function_def.returns and function_def.returns.id) or "void"
+        # print_dump(function_def)
+        # exit()
+        source_code = return_type + " " + name + "(" + self.generate_arguments(module, args) + ")"
+        self.function_decls.append(source_code)
         return source_code
-
-    def generate_name(self, module: _ast.Module, name: _ast.Name) -> str:
-        if isinstance(name, _ast.Name):
-            return name.id
-        self._throw_feature_not_supported("name", name)
 
     def generate_statement(self, module: _ast.Module, statement: _ast.stmt) -> str:
         source_code = ""
@@ -141,6 +189,8 @@ class CppCodeGenerator(DratiniCompiler):
         if isinstance(statement, _ast.Expr):
             expression = statement.value
             source_code += self.generate_expression(module, expression)
+        if isinstance(statement, _ast.FunctionDef):
+            source_code += self.generate_function_def(module, statement)
         if isinstance(statement, _ast.While):
             test_source_code = self.generate_expression(module, statement.test)
             body_source_code = self.generate_function_body(module, statement.body)
