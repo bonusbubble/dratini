@@ -50,4 +50,4 @@ if is_windows():
 INSTALL_LIB_DIR = os.path.join(ROOT, "lib")
 
 if is_windows():
-    INSTALL_LIB_DIR = ROOT
+    INSTALL_LIB_DIR = os.path.abspath(os.path.join(ROOT, ".."))
