@@ -36,7 +36,18 @@ def _uninstall_linux__link_main_executable():
 
 
 def _uninstall_windows():
-    pass
+    _uninstall_windows__copy_lib()
+    _uninstall_windows__link_main_executable()
+
+
+def _uninstall_windows__copy_lib():
+    copy_dest_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name)
+    shutil.rmtree(copy_dest_path)
+
+
+def _uninstall_windows__link_main_executable():
+    ln_dest_path = os.path.join(INSTALL_BIN_DIR, PROJECT.name)
+    os.remove(ln_dest_path)
 
 
 def _postuninstall_common():
