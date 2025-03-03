@@ -195,9 +195,19 @@ def parse_program_arguments() -> object:
             help="enable debugging mode"
     )
     argument_parser.add_argument(
+            "--emit-asm",
+            action="store_true",
+            help="emit assembly code"
+    )
+    argument_parser.add_argument(
             "--emit-ast",
             action="store_true",
             help="emit an AST (Abstract Syntax Tree)"
+    )
+    argument_parser.add_argument(
+            "--emit-bin",
+            action="store_true",
+            help="emit raw binary machine code"
     )
     argument_parser.add_argument(
             "--emit-cpp",
@@ -205,12 +215,28 @@ def parse_program_arguments() -> object:
             help="emit C++ source code"
     )
     argument_parser.add_argument(
+            "--emit-cxxflags",
+            action="store_true",
+            help="emit the list of flags needed to pass to the C++ compiler to compile the Dratini source code"
+    )
+    argument_parser.add_argument(
+            "--emit-llvm",
+            action="store_true",
+            help="emit LLVM IR code"
+    )
+    argument_parser.add_argument(
+            "-c",
+            "--emit-obj",
+            action="store_true",
+            help="emit object code"
+    )
+    argument_parser.add_argument(
             "-o",
             "--output",
             type = str,
             default = "",
             help="write the output to file",
-            choices=["path"]
+            metavar="path"
     )
     version_message = "%(prog)s " + PROJECT.version_tag + " - " + PROJECT.copyright
     argument_parser.add_argument(
@@ -228,11 +254,20 @@ def parse_program_arguments() -> object:
     # Parse the program arguments.
     program_arguments = argument_parser.parse_args()
     # Auto-detect the output format using the output file extension.
-    if program_arguments.format is None or len(program_arguments.format) < 1:
-        # Get the file extension of the output file path.
-        output_file_extension = program_arguments.output.split(".")[-1]
-        # Use the output file extension as the default output format.
-        program_arguments.format = output_file_extension
+    # Get the file extension of the output file path.
+    output_file_extension = program_arguments.output.split(".")[-1]
+    # Use the output file extension as the default output format.
+    if not program_arguments.emit_asm and not program_arguments.emit_ast and not program_arguments.emit_bin and not program_arguments.emit_cpp and not program_arguments.emit_llvm:
+        if output_file_extension == "s" or output_file_extension == "asm":
+            program_arguments.emit_asm = True
+        if output_file_extension == "ast":
+            program_arguments.emit_ast = True
+        if output_file_extension == "bin":
+            program_arguments.emit_bin = True
+        if output_file_extension == "cpp" or output_file_extension == "cc":
+            program_arguments.emit_cpp = True
+        if output_file_extension == "ll":
+            program_arguments.emit_llvm = True
     # Return the program's arguments.
     return program_arguments
 
