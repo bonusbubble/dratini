@@ -6,4 +6,13 @@ class Platform:
     def name(self):
         return platform.system()
 
-PLATFORM = Platform()
+
+_PLATFORM = Platform()
+
+
+def is_linux() -> bool:
+    return _PLATFORM.name == "Linux"
+
+
+def is_windows() -> bool:
+    return _PLATFORM.name == "Windows"

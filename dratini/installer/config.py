@@ -1,4 +1,11 @@
 #---------#
+# Imports #
+#---------#
+
+import os
+from dratini.platform import *
+
+#---------#
 # Project #
 #---------#
 
@@ -27,17 +34,20 @@ SUDO = "sudo"
 # The root directory to use when installing and uninstalling.
 ROOT = "/usr/local"
 
+if is_windows():
+    ROOT = "C:\\Program Files\\dratini"
+
 # The path to the main executable.
 BIN_PATH = PROJECT.name + ".py"
 
-# The name of the `g++` wrapper.
-CXX_WRAPPER_NAME = PROJECT.name + "-g++"
-
-# The path to the `g++` wrapper.
-CXX_WRAPPER_PATH = "./bin/" + CXX_WRAPPER_NAME
-
 # The directory to install binaries to.
-INSTALL_BIN_DIR = ROOT + "/bin"
+INSTALL_BIN_DIR = os.path.join(ROOT, "bin")
+
+if is_windows():
+    INSTALL_BIN_DIR = ROOT
 
 # The directory to install libraries to.
-INSTALL_LIB_DIR = ROOT + "/lib"
+INSTALL_LIB_DIR = os.path.join(ROOT, "lib")
+
+if is_windows():
+    INSTALL_LIB_DIR = ROOT

@@ -107,11 +107,11 @@ def hex2(
 
 
 def is_linux() -> bool:
-    return PLATFORM.name == "Linux"
+    return _PLATFORM.name == "Linux"
 
 
 def is_windows() -> bool:
-    return PLATFORM.name == "Windows"
+    return _PLATFORM.name == "Windows"
 
 
 def resolve_local_variable_name(

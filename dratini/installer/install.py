@@ -44,7 +44,19 @@ def _install_linux__link_main_executable():
 
 
 def _install_windows():
-    pass
+    _install_windows__copy_lib()
+    _install_windows__link_main_executable()
+
+
+def _install_windows__copy_lib():
+    copy_dest_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name)
+    shutil.copytree(".", copy_dest_path)
+
+
+def _install_windows__link_main_executable():
+    ln_src_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name, BIN_PATH)
+    ln_dest_path = os.path.join(INSTALL_BIN_DIR, PROJECT.name)
+    shutil.copy(ln_src_path, ln_dest_path)
 
 
 def _postinstall_common():
