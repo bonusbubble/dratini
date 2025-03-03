@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-libs="-lbgc -l:libraylib.a"
-
-g++ $@ -xc++ - $libs
