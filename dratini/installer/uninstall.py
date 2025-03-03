@@ -17,10 +17,14 @@ def _throw_platform_not_supported():
 
 
 def _delete_file(file_path: str) -> bool:
-    if os.path.exists(file_path):
+    try:
+        if os.path.exists(file_path):
+            return False
+        os.remove(file_path)
+        return True
+    except:
         return False
-    os.remove(file_path)
-    return True
+    return False
 
 
 
