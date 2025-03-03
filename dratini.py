@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 from ast import parse as _parse_python
 from dratini.code_generation.cpp import generate_cpp
 from dratini.utils import load_text_files_as_one, parse_program_arguments, print_dump, save_text_file, throw_feature_not_supported
@@ -16,13 +17,35 @@ INCLUDE_DIR = os.path.join(LINKING_DIR, "include")
 LIB_DIR = os.path.join(LINKING_DIR, "lib")
 
 
-def _add_dratini_flags_to_cxx_command(command: list[str]) -> list[str]:
+def _add_dratini_base_flags_to_cxx_command(command: list[str], args: argparse.Namespace) -> list[str]:
     command.append("-std=c++17")
     command.append("-I" + INCLUDE_DIR)
-    command.append("-L" + LIB_DIR)
-    command.append("-l:libbgc.a")
-    command.append("-l:libraylib.a")
+    if not args.emit_asm and not args.emit_obj:
+        command.append("-L" + LIB_DIR)
+        command.append("-l:libbgc.a")
+        command.append("-l:libraylib.a")
     return command
+
+
+def _add_dratini_inherited_flags_to_cxx_command(command: list[str], args: argparse.Namespace) -> list[str]:
+    if args.emit_asm or args.emit_llvm:
+        command.append("-S")
+    if args.emit_bin:
+        command.append("-Wl,--oformat=binary")
+    if args.emit_llvm:
+        command.append("-emit-llvm")
+    if args.emit_obj:
+        command.insert(0, "-c")
+    return command
+
+
+def get_cxx_flags(
+        args: argparse.Namespace
+) -> str:
+    flags = []
+    flags = _add_dratini_base_flags_to_cxx_command(flags, args)
+    flags = _add_dratini_inherited_flags_to_cxx_command(flags, args)
+    return flags
 
 
 def cxx(
@@ -30,14 +53,14 @@ def cxx(
         input_source_code: str=None,
         input_path: str=None,
         output_path: str=None,
-        output_format: str="elf"
+        args: argparse.Namespace = argparse.Namespace()
 ):
     result = None
     with TemporaryDirectory() as tmp_dir_obj:
         tmp_dir = str(tmp_dir_obj)
-        command = [ cxx ]
+        command = []
         if input_path is None:
-            file_id = randint(0x00000000, 0xFFFFFFFF)
+            file_id = round(abs(randint(0x00000000, 0xFFFFFFFF)))
             input_path = os.path.join(tmp_dir, str(file_id) + ".cpp")
             save_text_file(input_path, input_source_code)
         command.append(input_path)
@@ -47,7 +70,9 @@ def cxx(
         else:
             command.append("-xc++")
             command.append("-")
-        command = _add_dratini_flags_to_cxx_command(command)
+        cxx_flags = get_cxx_flags(args)
+        command.extend(cxx_flags)
+        command.insert(0, cxx)
         # print(" ".join(command))
         # exit()
         result = subprocess.run(command)
@@ -57,6 +82,12 @@ def cxx(
 # Parse the arguments passed to the program.
 args = parse_program_arguments()
 
+# If the program should print the C++ compiler flags:
+if args.emit_cxxflags:
+    cxx_flags = get_cxx_flags(args)
+    print(" ".join(cxx_flags))
+    exit()
+
 # Get the source code to parse.
 python_source_code = load_text_files_as_one(args.input)
 
@@ -64,7 +95,7 @@ python_source_code = load_text_files_as_one(args.input)
 python_module = _parse_python(python_source_code)
 
 # If the program should print the AST:
-if args.ast:
+if args.emit_ast:
     # Print the AST.
     print_dump(python_module)
     # Exit the program.
@@ -90,5 +121,5 @@ if args.emit_cpp:
 cxx(
         input_source_code=cpp_source_code,
         output_path=args.output,
-        output_format=args.format
+        args=args
 )
