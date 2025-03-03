@@ -7,7 +7,7 @@ import subprocess
 from dratini.utils import is_linux, is_windows, throw_feature_not_supported
 
 from .config import *
-from .uninstall import uninstall
+from .uninstall import uninstall, uninstall_dir, uninstall_file
 
 
 #-----------#
@@ -50,6 +50,7 @@ def _install_windows():
 
 def _install_windows__copy_lib():
     copy_dest_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name)
+    uninstall_dir(copy_dest_path)
     shutil.copytree(".", copy_dest_path)
 
 

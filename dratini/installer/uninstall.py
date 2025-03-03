@@ -16,7 +16,18 @@ def _throw_platform_not_supported():
     throw_feature_not_supported(PLATFORM_NAME, namespace="uninstall", category="platform")
 
 
-def _delete_file(file_path: str) -> bool:
+def uninstall_dir(dir_path: str) -> bool:
+    try:
+        if os.path.exists(dir_path):
+            return False
+        shutil.rmtree(dir_path, ignore_errors=True)
+        return True
+    except:
+        return False
+    return False
+
+
+def uninstall_file(file_path: str) -> bool:
     try:
         if os.path.exists(file_path):
             return False
@@ -25,7 +36,6 @@ def _delete_file(file_path: str) -> bool:
     except:
         return False
     return False
-
 
 
 def _uninstall_common():
@@ -44,7 +54,7 @@ def _uninstall_linux__copy_lib():
 
 def _uninstall_linux__link_main_executable():
     ln_dest_path = os.path.join(INSTALL_BIN_DIR, PROJECT.name)
-    _delete_file(ln_dest_path)
+    uninstall_file(ln_dest_path)
 
 
 def _uninstall_windows():
@@ -55,12 +65,10 @@ def _uninstall_windows():
 def _uninstall_windows__copy_lib():
     copy_dest_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name)
     shutil.rmtree(copy_dest_path, ignore_errors=True)
-    print("This is a desperate attempt at debugging the broken Windows support :(")
-
 
 def _uninstall_windows__link_main_executable():
     ln_dest_path = os.path.join(INSTALL_BIN_DIR, PROJECT.name)
-    _delete_file(ln_dest_path)
+    uninstall_file(ln_dest_path)
 
 
 def _postuninstall_common():
