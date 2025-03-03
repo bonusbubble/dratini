@@ -57,6 +57,7 @@ def _install_windows__copy_lib():
 def _install_windows__link_main_executable():
     ln_src_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name, BIN_PATH)
     ln_dest_path = os.path.join(INSTALL_BIN_DIR, PROJECT.name)
+    uninstall_file(ln_dest_path)
     shutil.copy(ln_src_path, ln_dest_path)
 
 
