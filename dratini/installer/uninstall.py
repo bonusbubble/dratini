@@ -55,6 +55,7 @@ def _uninstall_windows():
 def _uninstall_windows__copy_lib():
     copy_dest_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name)
     shutil.rmtree(copy_dest_path, ignore_errors=True)
+    print("This is a desperate attempt at debugging the broken Windows support :(")
 
 
 def _uninstall_windows__link_main_executable():
