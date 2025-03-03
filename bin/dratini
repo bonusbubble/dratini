@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+PROJECT_NAME=dratini
+
+LIB_DIR=$DIR/../lib/$PROJECT_NAME
+
+SCRIPT_PATH=$LIB_DIR/$PROJECT_NAME.py
+
+python
