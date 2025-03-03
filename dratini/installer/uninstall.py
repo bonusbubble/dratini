@@ -16,6 +16,14 @@ def _throw_platform_not_supported():
     throw_feature_not_supported(PLATFORM_NAME, namespace="uninstall", category="platform")
 
 
+def _delete_file(file_path: str) -> bool:
+    if os.path.exists(file_path):
+        return False
+    os.remove(file_path)
+    return True
+
+
+
 def _uninstall_common():
     pass
 
@@ -32,7 +40,7 @@ def _uninstall_linux__copy_lib():
 
 def _uninstall_linux__link_main_executable():
     ln_dest_path = os.path.join(INSTALL_BIN_DIR, PROJECT.name)
-    os.remove(ln_dest_path)
+    _delete_file(ln_dest_path)
 
 
 def _uninstall_windows():
@@ -47,7 +55,7 @@ def _uninstall_windows__copy_lib():
 
 def _uninstall_windows__link_main_executable():
     ln_dest_path = os.path.join(INSTALL_BIN_DIR, PROJECT.name)
-    os.remove(ln_dest_path)
+    _delete_file(ln_dest_path)
 
 
 def _postuninstall_common():
