@@ -1,8 +1,11 @@
 import argparse as _argparse
 from ast import dump as _dump_python_ast
+import subprocess
 
 from dratini.projectconfig import *
 
+from .hex2 import hex2
+from .error_handling import *
 
 
 def _get_default_output(
@@ -16,27 +19,6 @@ def _get_default_output(
         return "main.cpp"
     # Default
     return "program"
-
-
-def abort(
-        code: int = 0xFFFFFFFF,
-        message: str = ""
-):
-    '''
-    Abort the program by printing `message` and then returning `code`.
-    '''
-    # If a message was provided:
-    if (type(message) is str and len(message) > 0):
-        # Print the error message.
-        print("[Error " + hex(code) + "] " + message)
-    # Otherwise:
-    else:
-        # Print a generic error message.
-        print("[Error " + hex(code) + "] An unknown error occured. ")
-    # DEBUG: To debug errors, uncomment the following line and re-run.
-    # raise Exception()
-    # Exit the program, returning the provided exit code.
-    exit(code)
 
 
 def list_bool(
@@ -79,6 +61,17 @@ def list_str(
     return converted_values
 
 
+def platform_tag(cxx: str="clang++") -> str:
+    command = [cxx, "-dumpmachine"]
+    completed_process = subprocess.run(command, capture_output=True)
+    error_message = completed_process.stderr
+    if error_message:
+        print(error_message)
+        exit(1)
+    output = completed_process.stdout.decode("utf-8").strip()
+    return output
+
+
 def print_dump(
         object_: object
 ) -> str:
@@ -98,12 +91,6 @@ def resolve_variable_name(
         return resolve_unmangled_variable_name(variable_name)
     # Return the resolved local variable name.
     return resolve_local_variable_name(function_id, variable_name)
-
-
-def hex2(
-        value: int
-) -> str:
-    return hex(value)[3:]
 
 
 def is_linux() -> bool:
@@ -185,9 +172,23 @@ def parse_program_arguments() -> object:
     argument_parser.add_argument(
             "input",
             action="extend",
-            nargs="+",
+            nargs="*",
             type=str,
             help="one or more input files to read"
+    )
+    argument_parser.add_argument(
+            "--cxx",
+            type = str,
+            default = "clang++",
+            help="path to C++ compiler",
+            metavar="cxx"
+    )
+    argument_parser.add_argument(
+            "--cxxflags",
+            type = str,
+            default = "",
+            help="C++ compiler flags",
+            metavar="flags"
     )
     argument_parser.add_argument(
             "--debug",
@@ -231,6 +232,11 @@ def parse_program_arguments() -> object:
             help="emit object code"
     )
     argument_parser.add_argument(
+            "--emit-target",
+            action="store_true",
+            help="emit target platform tag"
+    )
+    argument_parser.add_argument(
             "-o",
             "--output",
             type = str,
@@ -238,7 +244,15 @@ def parse_program_arguments() -> object:
             help="write the output to file",
             metavar="path"
     )
-    version_message = "%(prog)s " + PROJECT.version_tag + " - " + PROJECT.copyright
+    argument_parser.add_argument(
+            "-T",
+            "--target",
+            type = str,
+            default = platform_tag(),
+            help="write the output to file",
+            metavar="path"
+    )
+    version_message = "%(prog)s " + PROJECT.version_tag + " [" + platform_tag() + "]" + " - " + PROJECT.copyright
     argument_parser.add_argument(
             "-v",
             "--version",
@@ -283,25 +297,6 @@ def save_text_file(
     with open(path, 'w') as file:
         # Write the contents of the file.
         return file.write(data)
-
-
-def throw_feature_not_supported(
-        feature: object,
-        namespace: str = None,
-        category: str = None
-):
-    error_message = "Feature not yet supported: "
-    if namespace is not None:
-        namespace = str(namespace)
-        error_message += namespace + "/"
-    if category is not None:
-        category = str(category)
-        error_message += category + "/"
-    error_message += feature.__class__.__name__
-    abort(
-            code = 0x111E_ED42,
-            message = error_message
-    )
 
 
 def _resolve_hex(
