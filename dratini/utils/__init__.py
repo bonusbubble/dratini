@@ -94,11 +94,11 @@ def resolve_variable_name(
 
 
 def is_linux() -> bool:
-    return _PLATFORM.name == "Linux"
+    return get_platform().name == "Linux"
 
 
 def is_windows() -> bool:
-    return _PLATFORM.name == "Windows"
+    return get_platform().name == "Windows"
 
 
 def resolve_local_variable_name(

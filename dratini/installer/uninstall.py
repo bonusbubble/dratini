@@ -49,7 +49,8 @@ def _uninstall_linux():
 
 def _uninstall_linux__copy_lib():
     copy_dest_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name)
-    shutil.rmtree(copy_dest_path, ignore_errors=True)
+    if os.path.exists(copy_dest_path):
+        shutil.rmtree(copy_dest_path)
 
 
 def _uninstall_linux__link_main_executable():
@@ -64,7 +65,8 @@ def _uninstall_windows():
 
 def _uninstall_windows__copy_lib():
     copy_dest_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name)
-    shutil.rmtree(copy_dest_path, ignore_errors=True)
+    if os.path.exists(copy_dest_path):
+        shutil.rmtree(copy_dest_path)
 
 def _uninstall_windows__link_main_executable():
     ln_dest_path = os.path.join(INSTALL_BIN_DIR, PROJECT.name)

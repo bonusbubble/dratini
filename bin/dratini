@@ -8,4 +8,4 @@ LIB_DIR=$DIR/../lib/$PROJECT_NAME
 
 SCRIPT_PATH=$LIB_DIR/$PROJECT_NAME.py
 
-python
+python $SCRIPT_PATH $@

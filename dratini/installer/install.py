@@ -7,6 +7,7 @@ import subprocess
 from dratini.utils import is_linux, is_windows, throw_feature_not_supported
 
 from .config import *
+from .ignore_patterns import installer_ignore_patterns
 from .uninstall import uninstall, uninstall_dir, uninstall_file
 
 
@@ -15,7 +16,7 @@ from .uninstall import uninstall, uninstall_dir, uninstall_file
 #-----------#
 
 def _throw_platform_not_supported():
-    throw_feature_not_supported(PLATFORM_NAME, namespace="install", category="platform")
+    throw_feature_not_supported(get_platform().name, namespace="install", category="platform")
 
 
 def _install_common():
@@ -51,7 +52,7 @@ def _install_windows():
 def _install_windows__copy_lib():
     copy_dest_path = os.path.join(INSTALL_LIB_DIR, PROJECT.name)
     uninstall_dir(copy_dest_path)
-    shutil.copytree(".", copy_dest_path)
+    shutil.copytree(".", copy_dest_path, ignore=installer_ignore_patterns)
 
 
 def _install_windows__link_main_executable():
